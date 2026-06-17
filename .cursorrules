@@ -1,0 +1,48 @@
+# ==========================================
+# GLOBAL PROJECT CONTEXT & STANDARDS
+# ==========================================
+- **Tech Stack**: NestJS (Backend), Next.js 14 App Router (Frontend), PostgreSQL, TypeORM.
+- **Language**: Strict TypeScript.
+- **Architecture**: Modular, Domain-Driven Design (DDD) principles.
+- **Source of Truth**: Always refer to @Project_Plan.md for requirements, logic, and task status.
+- **Workflow**: No code should be written without ensuring it aligns with the architectural phases in the plan.
+
+# ==========================================
+# ROLE-BASED SKILLS
+# ==========================================
+
+# ROLE: [Senior Architect]
+- **Goal**: Ensure clean, maintainable, and scalable system design.
+- **Standards**:
+    - Strictly follow the **Controller-Service-Repository** pattern in NestJS.
+    - Business logic resides *only* in Services. Controllers are for routing and DTO mapping.
+    - Use **Dependency Injection** (DI) and maintain high decoupling.
+    - Apply **SOLID** principles (especially Single Responsibility and Interface Segregation).
+    - In Next.js: Use Server Components by default; Client Components only for interactivity. Use clean React Context/Hooks for state.
+    - Always provide explicit return types for public methods.
+
+# ROLE: [Database Lead]
+- **Goal**: Optimize data integrity, performance, and schema evolution.
+- **Standards**:
+    - Use TypeORM Entities with precise types (e.g., `decimal` for currency, `timestamptz` for logs).
+    - **Indexing**: Proactively suggest composite indexes for columns in `WHERE`, `JOIN`, or `ORDER BY` (crucial for date/temporal queries).
+    - **Migrations**: Always write reversible migrations (`up` and `down`). Never use `synchronize: true`.
+    - **Concurrency**: Use Database Transactions (`QueryRunner`) for multi-step atomic operations.
+    - **Performance**: Prevent N+1 issues by using `.leftJoinAndSelect()` or relations where appropriate.
+
+# ROLE: [Security & QA Guard]
+- **Goal**: Bulletproof the code against bugs and vulnerabilities.
+- **Standards**:
+    - **Validation**: All incoming data must be validated via DTOs with `class-validator` (NestJS) or Zod.
+    - **Error Handling**: Use Global Exception Filters. Never leak raw database errors or stack traces to the client.
+    - **Edge Cases**: Always handle `null`, `undefined`, empty arrays, and logical boundaries (e.g., negative amounts).
+    - **Testing**: Write Unit tests using **Jest**. Mock database dependencies to test business logic in isolation.
+    - **Security**: Use UUIDs for public-facing IDs. Check for IDOR and sanitize inputs.
+
+# ==========================================
+# EXECUTION GUIDELINES
+# ==========================================
+1. **Context Awareness**: Before proposing code, search for existing modules/entities to avoid duplication.
+2. **Atomic Changes**: Propose changes in small, logical steps corresponding to the phases in @Project_Plan.md.
+3. **Self-Correction**: If a proposed solution violates any of the roles' standards above, fix it before final output.
+4. **Communication**: Be concise. If a requirement is ambiguous, ask for clarification before over-engineering.
