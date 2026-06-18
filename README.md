@@ -18,7 +18,16 @@ A full-stack messaging board where users can register, post short tagged message
 
 ## Local setup
 
-### 1. start the database
+Two options:
+
+| Mode | Command | Use when |
+|------|---------|----------|
+| **Dev** (recommended for coding) | Steps below + `docker compose up -d` | Hot reload, debugging |
+| **Docker full stack** | `docker compose -f docker-compose.full.yml up --build` | One-command demo / integration test |
+
+### Option A — Development (postgres in Docker, apps via npm)
+
+#### 1. Start the database
 
 ```bash
 
@@ -77,6 +86,56 @@ From the Messages page you can:
 - **Edit / Delete** — only on your own messages
 - **Load more** — scroll down; older messages load automatically
 
+### Option B — Full stack in Docker
+
+Runs PostgreSQL, backend, and frontend together. Migrations run automatically on backend startup.
+
+```bash
+docker compose -f docker-compose.full.yml up --build
+```
+
+| Service  | URL |
+|----------|-----|
+| App      | http://localhost:3000 |
+| API      | http://localhost:3001 |
+| Postgres | localhost:5432 |
+
+Stop with `docker compose -f docker-compose.full.yml down`. Add `-v` to remove the database volume.
+
+> `docker-compose.yml` starts **PostgreSQL only** for local development. `docker-compose.full.yml` runs the entire application.
+
+## Testing
+
+The project includes example unit tests. The primary backend example is `MessagesService` in `backend/src/messages/messages.service.spec.ts` — it mocks the TypeORM repository and verifies message creation plus DTO validation (240-char limit, valid tags).
+
+```bash
+# Backend unit tests
+cd backend && npm test
+
+# Frontend component tests
+cd frontend && npm test
+```
+
+Example test (abbreviated):
+
+```typescript
+it('creates a message with a valid payload', async () => {
+  repository.create.mockReturnValue({ ...savedMessage, tag: Tag.Tech });
+  repository.save.mockResolvedValue({ ...savedMessage, tag: Tag.Tech });
+  repository.findOne.mockResolvedValue({ ...savedMessage, tag: Tag.Tech });
+
+  const result = await service.create(authorId, {
+    content: 'Hello world',
+    tag: Tag.Tech,
+  });
+
+  expect(result.tag).toBe(Tag.Tech);
+  expect(repository.save).toHaveBeenCalled();
+});
+```
+
+See `backend/src/messages/messages.service.spec.ts` for the full suite.
+
 ## Scripts
 
 ### Backend (`backend/`)
@@ -105,12 +164,14 @@ From the Messages page you can:
 ## Project structure
 
 ```
-├── backend/          NestJS API (auth, messages, users)
-├── frontend/         Next.js 14 App Router UI
-├── docker-compose.yml
-├── Project_Plan.md   Requirements and development roadmap
-├── ARCHITECTURE.md   Design decisions and structure
-└── vault/            Obsidian knowledge base (optional)
+├── backend/               NestJS API (auth, messages, users)
+├── frontend/              Next.js 14 App Router UI
+├── docker-compose.yml     PostgreSQL only (dev)
+├── docker-compose.full.yml Full stack (postgres + API + web)
+├── Project_Plan.md        Requirements and development roadmap
+├── ARCHITECTURE.md        Design decisions and structure
+├── Answers.md             Scaling & production brief answers
+└── vault/                 Obsidian knowledge base (optional)
 ```
 
 ## API overview
@@ -138,4 +199,5 @@ From the Messages page you can:
 ## Further reading
 
 - [ARCHITECTURE.md](./ARCHITECTURE.md) — structure, design decisions, and next steps
+- [Answers.md](./Answers.md) — scaling, latency, fault tolerance, and monitoring at high read load
 - [Project_Plan.md](./Project_Plan.md) — original requirements and phased roadmap

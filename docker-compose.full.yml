@@ -1,0 +1,66 @@
+# Full-stack Docker setup (postgres + backend + frontend).
+# Usage:
+#   docker compose -f docker-compose.full.yml up --build
+#
+# App:      http://localhost:3000
+# API:      http://localhost:3001
+# Postgres: localhost:5432
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: messaging-board-db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: messaging_board
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d messaging_board']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: messaging-board-api
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/messaging_board
+      JWT_ACCESS_SECRET: change-me-access-secret-min-16
+      JWT_REFRESH_SECRET: change-me-refresh-secret-min-16
+      JWT_ACCESS_TTL: 15m
+      JWT_REFRESH_TTL: 7d
+      PORT: 3001
+      FRONTEND_URL: http://localhost:3000
+      NODE_ENV: production
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        BACKEND_URL: http://backend:3001
+    container_name: messaging-board-web
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    environment:
+      BACKEND_URL: http://backend:3001
+      NEXT_PUBLIC_API_URL: /api
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:

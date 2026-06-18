@@ -190,7 +190,7 @@ Tests mock database dependencies on the backend and use Testing Library on the f
 
 ### Deployment
 
-- Extend `docker-compose.yml` with backend and frontend services (multi-stage Dockerfiles)
+- Run the full stack with `docker compose -f docker-compose.full.yml up --build` (see [README.md](./README.md))
 - Use managed Postgres (RDS, Cloud SQL, Supabase) in production
 - Deploy frontend to Vercel or as a static/containerized Next.js build
 - Deploy backend to a container platform (Fly.io, ECS, Cloud Run, k8s)
@@ -210,4 +210,5 @@ Tests mock database dependencies on the backend and use Testing Library on the f
 ## Related documents
 
 - [README.md](./README.md) — local setup instructions
+- [Answers.md](./Answers.md) — scaling, latency, fault tolerance, and monitoring
 - [Project_Plan.md](./Project_Plan.md) — requirements and phased development roadmap
