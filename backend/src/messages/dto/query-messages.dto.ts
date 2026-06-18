@@ -21,6 +21,10 @@ export class QueryMessagesDto {
   userId?: string;
 
   @IsOptional()
+  @IsString()
+  username?: string;
+
+  @IsOptional()
   @IsDateString()
   from?: string;
 

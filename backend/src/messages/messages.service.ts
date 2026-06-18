@@ -68,6 +68,10 @@ export class MessagesService {
       qb.andWhere('message.authorId = :userId', { userId: query.userId });
     }
 
+    if (query.username) {
+      qb.andWhere('author.username = :username', { username: query.username });
+    }
+
     if (query.from) {
       qb.andWhere('message.createdAt >= :from', { from: new Date(query.from) });
     }
@@ -81,7 +85,9 @@ export class MessagesService {
       qb.andWhere(
         new Brackets((where) => {
           where
-            .where('message.createdAt < :cursorCreatedAt', { cursorCreatedAt: createdAt })
+            .where('message.createdAt < :cursorCreatedAt', {
+              cursorCreatedAt: createdAt,
+            })
             .orWhere(
               'message.createdAt = :cursorCreatedAt AND message.id < :cursorId',
               { cursorCreatedAt: createdAt, cursorId: id },
